@@ -1,0 +1,1 @@
+#Bu mening e-commerce platformam uchun ilk shablon.
