@@ -38,7 +38,13 @@ LOCAL_APPS = [
     'orders',
     'common',
 ]
-THIRD_PARTY_APPS = []
+THIRD_PARTY_APPS = [
+    'django_ckeditor_5',
+    'mptt',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'drf_spectacular',
+]
 
 INSTALLED_APPS = LOCAL_APPS + THIRD_PARTY_APPS
 
@@ -113,7 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tashkent'
 
 USE_I18N = True
 
@@ -133,3 +139,29 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # SMTP server host
+EMAIL_PORT = 587  # SMTP server port (587 for TLS, 465 for SSL)
+EMAIL_USE_TLS = True  # True for TLS, False for SSL
+EMAIL_HOST_USER = 'akhlidinshermatov00@gmail.com'  # SMTP server username
+EMAIL_HOST_PASSWORD = 'hkkcmvlyijlabzou'  # google account secret key
+EMAIL_USE_SSL = False  # Set to True if using SSL
+DEFAULT_FROM_EMAIL = 'akhlidinshermatov00@gmail.com'  # Default sender email address
+
+VERIFICATION_OTP_EXPIRATION_TIME = 2# in minutes
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'E-COMMERCE API Documentation',
+    'DESCRIPTION': 'For e-commerce platform',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
+}
