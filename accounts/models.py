@@ -7,8 +7,8 @@ from accounts.managers import UserManager
 from accounts.utils import CheckVerifacationOtp
 class User(AbstractUser):
     email = models.EmailField(_("Email address"), unique=True)
-    phone_number = models.CharField(max_length=20, verbose_name=_("Phone number"), validators=[RegexValidator(r'^\+?1?\d{9,12}$')])
-    address = models.TextField(max_length=100, verbose_name=_("Address"))
+    phone_number = models.CharField(max_length=20, verbose_name=_("Phone number"), validators=[RegexValidator(r'^\+?1?\d{9,12}$')], null=True, blank=True)
+    address = models.TextField(max_length=100, verbose_name=_("Address"), null=True, blank=True)
     username = models.CharField(
         _("username"),
         max_length=150,

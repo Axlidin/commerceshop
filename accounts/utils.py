@@ -9,14 +9,6 @@ def CheckVerifacationOtp(value):
    if len(str(value)) != 6:
        raise ValidationError(_("Otp code must be 6 digits"))
 
-def send_email(code, email):
-    message = f"Your verification code is {code}"
-    send_mail(
-        subject=_("Register Verification OTP code"),
-        message=message,
-        from_email=EMAIL_HOST,
-        recipient_list=[email],
-    )
 
 
 def generate_otp_code():

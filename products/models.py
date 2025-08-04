@@ -4,10 +4,7 @@ from common.models import Media
 from mptt.models import MPTTModel, TreeForeignKey
 from django_ckeditor_5.fields import CKEditor5Field
 
-from products.managers import ProductManager
 from django.core.cache import cache
-
-# Create your models here.
 
 class Category(MPTTModel):
     name = models.CharField(_("name"), max_length=255)
@@ -24,6 +21,17 @@ class Category(MPTTModel):
     class MPTTMeta:
         order_insertion_by = ['name']
 
+class ProductManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset()
+
+    def cached_all(self):
+        cache_key = "all_products"
+        products = cache.get(cache_key)
+        if products is None:
+            products = list(self.get_queryset())
+            cache.set(cache_key, products)
+        return products
 
 class Product(models.Model):
     name = models.CharField(_("name"), max_length=255)
@@ -43,9 +51,12 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    # def save(self, *args, **kwargs):
+    #     cache.delete("all_products")
+    #     self.category.save()
     def save(self, *args, **kwargs):
         cache.delete("all_products")
-        self.category.save()
+        super().save(*args, **kwargs)
 
 
 class ProductColour(models.Model):

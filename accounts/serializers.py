@@ -1,64 +1,35 @@
 from django.utils import timezone
 from rest_framework import serializers
 from accounts.models import *
-from accounts.utils import generate_otp_code, send_email
+from accounts.utils import generate_otp_code
 from core.settings.base import VERIFICATION_OTP_EXPIRATION_TIME
+
+from accounts.tasks import send_otp_code_to_email
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["first_name", "last_name", "email", "password"]
 
-    # def create(self, validated_data):
-    #     user = User.objects.filter(email=validated_data.get("email"), is_active=False)
-    #     if user.exists():
-    #         sms = VerificationOtp.objects.get(
-    #             user=user, type=VerificationOtp.VerificationType.REGISTER,
-    #             expires_in__lt=timezone.now(), is_active=True
-    #         )
-    #         if sms:
-    #             sms.expires_in = timezone.now() + VERIFICATION_OTP_EXPIRATION_TIME
-    #             code = generate_otp_code()
-    #             sms.code = code
-    #             send_email(code=code, email=user.email)
-    #
-    #     return self.create(self, validated_data)
+    def create(self, validated_data):
+        user = User.objects.filter(email=validated_data.get("email"), is_active=False)
+        if user.exists():
+            sms = VerificationOtp.objects.get(
+                user=user, type=VerificationOtp.VerificationType.REGISTER,
+                expires_in__lt=timezone.now(), is_active=True
+            )
+            if sms:
+                sms.expires_in = timezone.now() + VERIFICATION_OTP_EXPIRATION_TIME
+                code = generate_otp_code()
+                sms.code = code
+                send_otp_code_to_email(code=code, email=user.email)
 
-    # def create(self, validated_data):
-    #     email = validated_data.get("email")
-    #     user = User.objects.filter(email=email, is_active=False)
-    #
-    #     if user.exists():
-    #         existing_user = user.first()
-    #         sms = VerificationOtp.objects.filter(
-    #             user=existing_user,
-    #             type=VerificationOtp.VerificationType.REGISTER,
-    #             expires_in__lt=timezone.now(),
-    #             is_active=True
-    #         ).last()
-    #         if sms:
-    #             sms.expires_in = timezone.now() + VERIFICATION_OTP_EXPIRATION_TIME
-    #             code = generate_otp_code()
-    #             sms.code = code
-    #             sms.save()
-    #             send_email(code=code, email=email)
-    #         return existing_user  # Mavjud foydalanuvchini qaytarish
-    #
-    #     # Yangi foydalanuvchi yaratish
-    #     validated_data["is_active"] = False
-    #     user = User.objects.create_user(**validated_data)
-    #
-    #     code = generate_otp_code()
-    #     VerificationOtp.objects.create(
-    #         user=user,
-    #         type=VerificationOtp.VerificationType.REGISTER,
-    #         code=code,
-    #         expires_in=timezone.now() + VERIFICATION_OTP_EXPIRATION_TIME,
-    #         is_active=True
-    #     )
-    #     send_email(code=code, email=user.email)
-    #     return user
-    #
+        user = User.objects.create(first_name=validated_data.get("first_name"),
+                                   last_name=validated_data.get("last_name"),
+                                   email=validated_data.get("email"))
+        user.set_password(validated_data.get("password"))
+        user.save()
+        return user
 
 class VerifyOtpSerializer(serializers.Serializer):
     code = serializers.IntegerField(required=True)
